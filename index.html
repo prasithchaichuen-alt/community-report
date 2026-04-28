@@ -1,62 +1,105 @@
-<style>
-    .community-card {
-        font-family: 'Sarabun', sans-serif;
-        max-width: 400px;
-        background: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        padding: 25px;
-        border-top: 8px solid #28a745; /* สีเขียวแสดงถึงความมั่งคั่ง */
-    }
-    .card-title {
-        color: #333;
-        margin-bottom: 20px;
-        text-align: center;
-        font-size: 1.2rem;
-    }
-    .stat-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 15px;
-        padding-bottom: 8px;
-        border-bottom: 1px dashed #eee;
-    }
-    .stat-label { color: #666; }
-    .stat-value { font-weight: bold; color: #222; }
-    .balance-box {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
-        margin-top: 20px;
-    }
-    .balance-label { display: block; font-size: 0.9rem; color: #666; }
-    .balance-amount { font-size: 1.8rem; color: #28a745; font-weight: 800; }
-    .update-tag {
-        display: block;
-        text-align: center;
-        font-size: 0.75rem;
-        color: #999;
-        margin-top: 15px;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สรุปงบประมาณชุมชน</title>
+    <style>
+        /* ตั้งค่าพื้นฐานให้เต็มหน้าจอและดูสบายตา */
+        body {
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px; /* กันขอบจอมือถือ */
+            box-sizing: border-box;
+        }
+
+        .community-card {
+            font-family: 'Sarabun', sans-serif;
+            width: 100%; /* ให้กว้างเต็มที่ */
+            max-width: 450px; /* แต่กว้างสุดไม่เกิน 450px (ถ้าเปิดในคอม) */
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-top: 10px solid #28a745;
+            box-sizing: border-box;
+        }
+
+        .card-title {
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .stat-label { color: #666; font-size: 1rem; }
+        .stat-value { font-weight: bold; color: #222; font-size: 1.1rem; }
+
+        .balance-box {
+            background: #e9f7ef;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 25px;
+            border: 1px solid #d4edda;
+        }
+
+        .balance-label { display: block; font-size: 1rem; color: #155724; margin-bottom: 5px; }
+        .balance-amount { 
+            font-size: 2.2rem; 
+            color: #28a745; 
+            font-weight: 800;
+            word-wrap: break-word; /* กันตัวเลขยาวเกินจนล้นจอมือถือ */
+        }
+
+        .update-tag {
+            display: block;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 20px;
+        }
+
+        /* ปรับแต่งเล็กน้อยสำหรับหน้าจอที่เล็กมากๆ */
+        @media (max-width: 360px) {
+            .card-title { font-size: 1.2rem; }
+            .balance-amount { font-size: 1.8rem; }
+            .community-card { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
 
 <div class="community-card">
     <div class="card-title">📊 สรุปงบประมาณชุมชน</div>
     
     <div class="stat-row">
-        <span class="stat-label">จำนวนรายที่จ่ายแล้ว</span>
+        <span class="stat-label">จ่ายแล้ว</span>
         <span class="stat-value"><span id="paid_count">0</span> ราย</span>
     </div>
     
     <div class="stat-row">
         <span class="stat-label">รายรับรวม</span>
-        <span class="stat-value" style="color: #28a745;">+ <span id="total_income">0</span></span>
+        <span class="stat-value" style="color: #28a745;">+ ฿<span id="total_income">0</span></span>
     </div>
     
     <div class="stat-row">
         <span class="stat-label">รายจ่ายรวม</span>
-        <span class="stat-value" style="color: #dc3545;">- <span id="total_expense">0</span></span>
+        <span class="stat-value" style="color: #dc3545;">- ฿<span id="total_expense">0</span></span>
     </div>
 
     <div class="balance-box">
@@ -66,6 +109,7 @@
 
     <span class="update-tag">อัปเดตล่าสุด: <span id="update_at">-</span></span>
 </div>
+
 <script>
     const url = 'https://gist.githubusercontent.com/prasithchaichuen-alt/3c6ddfd75ff359beff201d22c8a34cd9/raw/data.json';
 
@@ -75,16 +119,20 @@
             const data = await response.json();
 
             // ใส่ตัวเลขและจัดรูปแบบคอมม่า
-            document.getElementById('paid_count').innerText = data.paid_count.toLocaleString();
-            document.getElementById('total_income').innerText = data.total_income.toLocaleString();
-            document.getElementById('total_expense').innerText = data.total_expense.toLocaleString();
-            document.getElementById('balance').innerText = data.balance.toLocaleString();
-            document.getElementById('update_at').innerText = data.update_at;
+            document.getElementById('paid_count').innerText = (data.paid_count || 0).toLocaleString();
+            document.getElementById('total_income').innerText = (data.total_income || 0).toLocaleString();
+            document.getElementById('total_expense').innerText = (data.total_expense || 0).toLocaleString();
+            document.getElementById('balance').innerText = (data.balance || 0).toLocaleString();
+            document.getElementById('update_at').innerText = data.update_at || 'ไม่ระบุเวลา';
 
         } catch (e) {
             console.error('Error fetching data:', e);
+            document.querySelector('.card-title').innerText = "เชื่อมต่อข้อมูลไม่ได้ครับอ้าย";
         }
     }
 
     fetchCommunityData();
 </script>
+
+</body>
+</html>
