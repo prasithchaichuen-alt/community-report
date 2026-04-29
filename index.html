@@ -33,10 +33,10 @@
     
     <div class="ex-list">
         <div style="font-size: 0.85rem; font-weight: bold; color: #856404; margin-bottom: 8px;">📋 รายจ่ายแยกตามหมวดหมู่:</div>
-        <div class="ex-item"><span>1. ค่าใช้จ่ายส่วนกลาง</span><span id="exp_1">฿0</span></div>
-        <div class="ex-item"><span>2. ค่าจ้างและบริการ</span><span id="exp_2">฿0</span></div>
-        <div class="ex-item"><span>3. ค่ากิจกรรม</span><span id="exp_3">฿0</span></div>
-        <div class="ex-item"><span>4. ค่าดำเนินการ</span><span id="exp_4">฿0</span></div>
+        <div class="ex-item"><span>1. ค่าใช้จ่ายส่วนกลาง</span><span id="exp_1">฿0.00</span></div>
+        <div class="ex-item"><span>2. ค่าจ้างและบริการ</span><span id="exp_2">฿0.00</span></div>
+        <div class="ex-item"><span>3. ค่ากิจกรรม</span><span id="exp_3">฿0.00</span></div>
+        <div class="ex-item"><span>4. ค่าดำเนินการ</span><span id="exp_4">฿0.00</span></div>
     </div>
 
     <div class="balance-box">
@@ -72,12 +72,21 @@
             document.getElementById('balance').innerText = (data.balance || 0).toLocaleString();
             document.getElementById('update_at').innerText = data.update_at || '-';
             
-            // ดึงจาก ID แทนชื่อ (1=ส่วนกลาง, 2=จ้างบริการ, 3=กิจกรรม, 4=ดำเนินการ)
             const ex = data.expense_by_id || {};
-            document.getElementById('exp_1').innerText = '฿' + (ex['1'] || 0).toLocaleString();
-            document.getElementById('exp_2').innerText = '฿' + (ex['2'] || 0).toLocaleString();
-            document.getElementById('exp_3').innerText = '฿' + (ex['3'] || 0).toLocaleString();
-            document.getElementById('exp_4').innerText = '฿' + (ex['4'] || 0).toLocaleString();
+            const categories = [
+                { id: '1', name: 'ค่าใช้จ่ายส่วนกลาง' },
+                { id: '2', name: 'ค่าจ้างและบริการ' },
+                { id: '3', name: 'ค่ากิจกรรม' },
+                { id: '4', name: 'ค่าดำเนินการ' }
+            ];
+
+            categories.forEach(cat => {
+                const element = document.getElementById(`exp_${cat.id}`);
+                if (element) {
+                    const val = ex[cat.id] || 0;
+                    element.innerText = '฿' + val.toLocaleString(undefined, {minimumFractionDigits: 2});
+                }
+            });
 
             membersData = data.members || [];
         } catch (e) { console.error('Error:', e); }
